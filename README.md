@@ -1,2 +1,2 @@
 # slagent
-Software Package implementing the smartloader agent
+Software Package implementing the SmartLoader agent
