@@ -33,49 +33,95 @@
 #
 # Revision $Id$
 
-## Simple talker demo that published std_msgs/Strings messages
-## to the 'chatter' topic
 
 import rospy
-from std_msgs.msg import String
-from std_msgs.msg import Int32
-#import sensor_msgs.msg
-from sensor_msgs.msg import Joy
 from std_msgs.msg import Header
+from std_msgs.msg import Int32, Bool
+from std_msgs.msg import String
+from sensor_msgs.msg import Joy
+from sensor_msgs.msg import Imu
+from geometry_msgs.msg import PoseStamped, TwistStamped
 
+MAX_NUM_STONES = 10
+#global stonePoseSub[]
+#global stoneIsLoaded[MAX_NUM_STONES]
+#global vehiclePositionSub, vehicleVelocitySub, heightSub, bladeImuSub, vehicleImuSub
+
+def VehiclePositionCB(git gui):
+    rospy.loginfo("I was called here")
+    type(data)
+    pose = data.pose
+    position = pose.position
+    rospy.loginfo("I was called...")
+    rospy.loginfo('position is:' + str(position.x))
+
+def VehicleVelocityCB(data):
+    velocity=data.twist
+    rospy.loginfo('position is:' + velocity)
+
+def ArmHeightCB(data):
+    height=data.data
+    rospy.loginfo('arm height is:' + str(height))
+
+def BladeImuCB(data):
+    imu=data.imu
+    rospy.loginfo('blade imu is:' + imu)
+
+def VehicleImuCB(data):
+    imu=data.imu
+    rospy.loginfo('vehicle imu is:' + imu)
+
+def StonePositionCB(data, arg):
+    position=data.pose
+    stone=arg
+    rospy.loginfo('stone '+str(stone)+ ' position is:' + position)
+
+def StoneIsLoadedCB(data, arg):
+    question=data.data
+    stone=arg
+    rospy.loginfo('Is stone '+str(stone)+ ' loaded? ' + str(question))
 
 def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard %s', heightsub.data)
+    rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data)
 
 def actions():
-    pubteststring = rospy.Publisher('testjoy', String, queue_size=10)
-    rate = rospy.Rate(10) # 10hz
-
-    heightsub = rospy.Subscriber('arm/height', Int32, callback)
-  #  testsub = rospy.Subscriber('joy', Joy, callback)
-    pubjoy = rospy.Publisher("joy", Joy, queue_size=10 )
     joymessage = Joy()
     joymessage.header = Header
     joymessage.header.stamp = rospy.get_time()
     joymessage.axes =  [-0.0, -0.0, 0.0, 0.0, 0.0, 0.0]
     joymessage.buttons= [0] * 12
     #print(joymessage)
-    for i in range(8):
-    #    joymessage.axes[i] = 0.0
-        joymessage.buttons[i] = 0
 
     while not rospy.is_shutdown():
-        hello_str = "hello world %s" % rospy.get_time()
-#        rospy.loginfo(hello_str)
-        pubteststring.publish(hello_str)
-        #joymessage.axes[0] = "0.1"
-        #joymessage.buttons[2] = "0.2"
+        joymessage.axes[0] = "0.1"
+        joymessage.buttons[2] = "1"
         pubjoy.publish(joymessage)
         #rospy.loginfo(joymessage)
         rate.sleep()
 
 if __name__ == '__main__':
-    rospy.init_node('slagent', anonymous=True)
+    rospy.init_node('slagent', anonymous=False)
+
+    #Define Subscribers
+    vehiclePositionSub = rospy.Subscriber('mavros/local_position/pose', PoseStamped, VehiclePositionCB)
+    vehicleVelocitySub = rospy.Subscriber('mavros/local_position/velocity', TwistStamped, VehicleVelocityCB)
+    heightSub = rospy.Subscriber('arm/height', Int32, ArmHeightCB)
+    bladeImuSub = rospy.Subscriber('arm/blade/Imu', Imu, BladeImuCB)
+    vehicleImuSub = rospy.Subscriber('mavros/imu/data', Imu, VehicleImuCB)
+
+    stoneIsLoadedSubList = []
+    stonePoseSubList = []
+    for i in range(MAX_NUM_STONES):
+        topicName = 'stone/'+str(i)+'/Pose'
+        stonePoseSubList.append(rospy.Subscriber(topicName, PoseStamped, StonePositionCB, i))
+        #stonePoseSub[i] = rospy.Subscriber(topicName, PoseStamped, StonePositionCB, i)
+        topicName = 'stone/'+ str(i)+'/IsLoaded'
+        stoneIsLoadedSubList.append(rospy.Subscriber(topicName, Bool, StoneIsLoadedCB, i))
+
+    #Define Publishers
+    pubjoy = rospy.Publisher("joy", Joy, queue_size=10 )
+    rate = rospy.Rate(10) # 10hz
+
     try:
         actions()
     except rospy.ROSInterruptException:
