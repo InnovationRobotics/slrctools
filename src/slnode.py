@@ -38,26 +38,40 @@
 
 import rospy
 from std_msgs.msg import String
-import sensor_msgs.msg
+from std_msgs.msg import Int32
+#import sensor_msgs.msg
 from sensor_msgs.msg import Joy
+from std_msgs.msg import Header
+
+
+def callback(data):
+    rospy.loginfo(rospy.get_caller_id() + 'I heard %s', heightsub.data)
 
 def actions():
     pubteststring = rospy.Publisher('testjoy', String, queue_size=10)
     rate = rospy.Rate(10) # 10hz
-    pubjoy = rospy.Publisher("joy", sensor_msgs.Joy, queue_size=10 )
-    joymessage = sensor_msgs.Joy
+
+    heightsub = rospy.Subscriber('arm/height', Int32, callback)
+  #  testsub = rospy.Subscriber('joy', Joy, callback)
+    pubjoy = rospy.Publisher("joy", Joy, queue_size=10 )
+    joymessage = Joy()
+    joymessage.header = Header
+    joymessage.header.stamp = rospy.get_time()
+    joymessage.axes =  [-0.0, -0.0, 0.0, 0.0, 0.0, 0.0]
+    joymessage.buttons= [0] * 12
+    #print(joymessage)
     for i in range(8):
-        joymessage.axes[i] = 0.0
-        joymessage.buttons[i] = 0.0
+    #    joymessage.axes[i] = 0.0
+        joymessage.buttons[i] = 0
 
     while not rospy.is_shutdown():
         hello_str = "hello world %s" % rospy.get_time()
-        rospy.loginfo(hello_str)
+#        rospy.loginfo(hello_str)
         pubteststring.publish(hello_str)
-        joymessage.axes[0] = "0.1"
-        joymessage.buttons[2] = "0.2"
+        #joymessage.axes[0] = "0.1"
+        #joymessage.buttons[2] = "0.2"
         pubjoy.publish(joymessage)
-        rospy.loginfo(joymessage)
+        #rospy.loginfo(joymessage)
         rate.sleep()
 
 if __name__ == '__main__':
