@@ -47,34 +47,38 @@ MAX_NUM_STONES = 10
 #global stoneIsLoaded[MAX_NUM_STONES]
 #global vehiclePositionSub, vehicleVelocitySub, heightSub, bladeImuSub, vehicleImuSub
 
-def VehiclePositionCB(git gui):
+def VehiclePositionCB(stamped_pose):
     rospy.loginfo("I was called here")
-    type(data)
-    pose = data.pose
-    position = pose.position
-    rospy.loginfo("I was called...")
-    rospy.loginfo('position is:' + str(position.x))
+    type(stamped_pose)
+ #   pose = stamped_pose.pose
+ #   position = pose.position
+ #   rospy.loginfo("I was called...")
+    rospy.loginfo('position is:' + str(stamped_pose))
 
-def VehicleVelocityCB(data):
-    velocity=data.twist
-    rospy.loginfo('position is:' + velocity)
+def VehicleVelocityCB(stamped_twist):
+    twist = stamped_twist.twist
+    rospy.loginfo('position is:' + str(twist))
 
 def ArmHeightCB(data):
     height=data.data
     rospy.loginfo('arm height is:' + str(height))
 
-def BladeImuCB(data):
-    imu=data.imu
-    rospy.loginfo('blade imu is:' + imu)
+def BladeImuCB(imu):
+    orientation=imu.orientation
+    angular_velocity = imu.angular_velocity
+    linear_acceleration = imu.linear_acceleration
+    rospy.loginfo('blade imu is:' + str(imu))
 
-def VehicleImuCB(data):
-    imu=data.imu
-    rospy.loginfo('vehicle imu is:' + imu)
+def VehicleImuCB(imu):
+    orientation = imu.orientation
+    angular_velocity = imu.angular_velocity
+    linear_acceleration = imu.linear_acceleration
+    rospy.loginfo('vehicle imu is:' + str(imu))
 
 def StonePositionCB(data, arg):
     position=data.pose
     stone=arg
-    rospy.loginfo('stone '+str(stone)+ ' position is:' + position)
+    rospy.loginfo('stone '+str(stone)+ ' position is:' + str(position))
 
 def StoneIsLoadedCB(data, arg):
     question=data.data
@@ -95,7 +99,7 @@ def actions():
     while not rospy.is_shutdown():
         joymessage.axes[0] = "0.1"
         joymessage.buttons[2] = "1"
-        pubjoy.publish(joymessage)
+#        pubjoy.publish(joymessage)
         #rospy.loginfo(joymessage)
         rate.sleep()
 
@@ -117,7 +121,7 @@ if __name__ == '__main__':
         #stonePoseSub[i] = rospy.Subscriber(topicName, PoseStamped, StonePositionCB, i)
         topicName = 'stone/'+ str(i)+'/IsLoaded'
         stoneIsLoadedSubList.append(rospy.Subscriber(topicName, Bool, StoneIsLoadedCB, i))
-
+    rospy.spin()
     #Define Publishers
     pubjoy = rospy.Publisher("joy", Joy, queue_size=10 )
     rate = rospy.Rate(10) # 10hz
