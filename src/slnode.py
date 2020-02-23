@@ -47,54 +47,64 @@ MAX_NUM_STONES = 10
 #global stoneIsLoaded[MAX_NUM_STONES]
 #global vehiclePositionSub, vehicleVelocitySub, heightSub, bladeImuSub, vehicleImuSub
 
+world_state = {}
+joyactions = {}
+
 def VehiclePositionCB(stamped_pose):
-    rospy.loginfo("I was called here")
+    rospy.logdebug("I was called here")
     type(stamped_pose)
  #   pose = stamped_pose.pose
  #   position = pose.position
  #   rospy.loginfo("I was called...")
-    rospy.loginfo('position is:' + str(stamped_pose))
+    world_state['VehiclePosition'] = stamped_pose
+    rospy.logdebug('position is:' + str(stamped_pose))
 
 def VehicleVelocityCB(stamped_twist):
     twist = stamped_twist.twist
-    rospy.loginfo('position is:' + str(twist))
+    world_state['VehicleVelocity'] = stamped_twist
+    rospy.logdebug('velocity is:' + str(twist))
 
 def ArmHeightCB(data):
     height=data.data
-    rospy.loginfo('arm height is:' + str(height))
+    world_state['ArmHeight'] = height
+    rospy.logdebug('arm height is:' + str(height))
 
 def BladeImuCB(imu):
     orientation=imu.orientation
     angular_velocity = imu.angular_velocity
     linear_acceleration = imu.linear_acceleration
-    rospy.loginfo('blade imu is:' + str(imu))
+    world_state['BladeImu'] = imu
+    rospy.logdebug('blade imu is:' + str(imu))
 
 def VehicleImuCB(imu):
     orientation = imu.orientation
     angular_velocity = imu.angular_velocity
     linear_acceleration = imu.linear_acceleration
-    rospy.loginfo('vehicle imu is:' + str(imu))
+    world_state['VehicleImu'] = imu
+    rospy.logdebug('vehicle imu is:' + str(imu))
+
 
 def StonePositionCB(data, arg):
     position=data.pose
     stone=arg
-    rospy.loginfo('stone '+str(stone)+ ' position is:' + str(position))
+    world_state['StonePosition'+str(stone)] = position
+    rospy.logdebug('stone '+str(stone)+ ' position is:' + str(position))
 
 def StoneIsLoadedCB(data, arg):
     question=data.data
     stone=arg
-    rospy.loginfo('Is stone '+str(stone)+ ' loaded? ' + str(question))
-
-def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data)
+    world_state['StoneIsLoaded'+str(stone)] = question
+    rospy.logdebug('Is stone '+str(stone)+ ' loaded? ' + str(question))
 
 def actions():
+    print(joyactions)
     joymessage = Joy()
     joymessage.header = Header
     joymessage.header.stamp = rospy.get_time()
-    joymessage.axes =  [-0.0, -0.0, 0.0, 0.0, 0.0, 0.0]
+ #   joymessage.axes =  [-0.0, -0.0, 0.0, 0.0, 0.0, 0.0]
+    joymessage.axes =  [joyactions["0"], joyactions["1"], joyactions["2"], joyactions["3"], joyactions["4"], joyactions["5"]]
     joymessage.buttons= [0] * 12
-    #print(joymessage)
+    print(joymessage)
 
     while not rospy.is_shutdown():
         joymessage.axes[0] = "0.1"
@@ -103,8 +113,9 @@ def actions():
         #rospy.loginfo(joymessage)
         rate.sleep()
 
-if __name__ == '__main__':
+def __init__():
     rospy.init_node('slagent', anonymous=False)
+    #rospy.init_node('slagent', anonymous=False,log_level=rospy.DEBUG)
 
     #Define Subscribers
     vehiclePositionSub = rospy.Subscriber('mavros/local_position/pose', PoseStamped, VehiclePositionCB)
@@ -123,10 +134,20 @@ if __name__ == '__main__':
         stoneIsLoadedSubList.append(rospy.Subscriber(topicName, Bool, StoneIsLoadedCB, i))
     rospy.spin()
     #Define Publishers
+    joyactions["0"] = 0
+    joyactions["1"] = joyactions["2"] = 0
+    joyactions["3"] = joyactions["4"] = 0
+    joyactions["5"] = 0
+
     pubjoy = rospy.Publisher("joy", Joy, queue_size=10 )
     rate = rospy.Rate(10) # 10hz
 
+def run():
     try:
         actions()
     except rospy.ROSInterruptException:
         pass
+
+if __name__ == '__main__':
+    __init__()
+    run()
