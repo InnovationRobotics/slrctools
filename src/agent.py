@@ -7,7 +7,7 @@ import json
 rn = SlRosNode()
 
 #slnode.__init__()
-actionValues = {"0": 0.0, "1":0.1, "2":0.2, "3": 0.3, "4": 0.4, "5":0.5}
+actionValues = {"0": 0.0, "1":0.11, "2":0.22, "3": 0.33, "4": 0.44, "5":0.55}
 rn.SetActionValues(actionValues)
 rn.run()
 print(rn.world_state)

@@ -68,8 +68,10 @@ class SlRosNode(object):
         #   position = pose.position
         #   rospy.loginfo("I was called...")
         self.world_state['VehiclePosition'] = stamped_pose
+
         self.computeActions()
-        rospy.logdebug('position is:' + str(stamped_pose))
+ #       self.actions()
+        rospy.loginfo('position is:' + str(stamped_pose))
 
     def VehicleVelocityCB(self, stamped_twist):
         twist = stamped_twist.twist
@@ -139,13 +141,12 @@ class SlRosNode(object):
 
         self.pubjoy = rospy.Publisher("joy", Joy, queue_size=10)
         self.rate = rospy.Rate(10)  # 10hz
-        self.actions()
-        rospy.spin()
+#        self.actions()
+#        rospy.spin()
        # self.actions()
 
 
     def actions(self):
-            rospy.logdebug("Here I am:")
             rospy.logdebug(self.joyactions)
             joymessage = Joy()
             #joymessage.header = Header
@@ -158,15 +159,15 @@ class SlRosNode(object):
             rospy.logdebug(joymessage)
 
             while not rospy.is_shutdown():
-#                joymessage.axes[0] = 0.1
-#                joymessage.buttons[2] = 1
+                joymessage.axes = [self.joyactions["0"], self.joyactions["1"], self.joyactions["2"], self.joyactions["3"], self.joyactions["4"], self.joyactions["5"]]
                 self.pubjoy.publish(joymessage)
                 rospy.logdebug(joymessage)
                 self.rate.sleep()
 
     def run(self):
            try:
-                self.actions()
+               #rospy.spin()
+               self.actions()
            except rospy.ROSInterruptException:
                 pass
 
