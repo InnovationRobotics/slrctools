@@ -1,18 +1,17 @@
-# oprecorder - Operator Recorder
-The goal of this software package is to record the world state and the actions performed by an operator.
+# joy2rc - This package converts /joy topic to /mavros/rc/override mavros/OverrideRCIn
+The goal of this software package is to stupidely convert /joy topic to /mavros/rc/override topic.
 
-It starts a ROS node called /oprecorder that monitors the following topics:
-* /mavros/local_position/pose (PoseStamped)
-* /mavros/local_position/velocity (TwistStamped)
-* /arm/height (Int32)
-* /arm/blade/Imu (Imu)
-* /mavros/imu/data (Imu)
-* /stone/1/Pose (PoseStamped)
-* /stone/2/Pose (PoseStamped)
-* /joy (Joy)
+It starts a ROS node called /joy2rc that monitors the following topic:
+* /joy (http://docs.ros.org/api/sensor_msgs/html/msg/Joy.html)
 
-Each time the callback of the action (joystick) is called, it changes the world state accordingly and saves the:
-Date&Time, world_state, grade (N/A) by adding a row in the csv file: oprecorder.csv
+It outputs:
+* /mavros/rc/override (mavros/OverrideRCIn)
+
+
+Actions: 0
+actions(-0.0, -0.0, 0.0, -0.0, -0.0, 0.0, -0.0, -0.0)
+actions[5] = 0.859133 = Throttle
+
 
 
 
