@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 sys.path
@@ -13,8 +13,9 @@ from mavros_msgs import msg
 from datetime import datetime
 import math
 from geometry_msgs.msg import Pose, Point, Quaternion, Vector3
-import src.Unity2RealWorld as toRW
-from slrctools.msg import IntAdc
+import Unity2RealWorld27 as toRW
+from rosserial_arduino.msg import Adc
+#from slrctools.msg import IntAdc
 from rospy_tutorials.msg import Floats
 
 class Adc2Std(object):
@@ -23,13 +24,14 @@ class Adc2Std(object):
     msgHeightLong = Int32()
 #    thismsg = IntAdc()
 
-    def AdcSubCB(self, adc):
-        self.msgHeightShort = int(adc[0])
+    def AdcSubCB(self, msg):
+        rospy.logdebug("Got message:"+msg)
+        self.msgHeightShort = msg.adc0
         self.pubShortHeight.publish(self.msgHeightShort)
-        self.msgHeightLong = int(adc[1])
+        self.msgHeightLong = msg.adc1
         self.pubLongHeight.publish(self.msgHeightLong)
 
-        rollPitchYaw = Vector3(int(adc[2]), int(adc[3]), int(adc[4]))
+        rollPitchYaw = Vector3(msg.adc2, msg.adc3, msg.adc4)
         self.bladeImuMsg.orientation = toRW.rotationROS2RW(rollPitchYaw)
         self.pubBladeImu.publish(self.bladeImuMsg)
 
@@ -39,7 +41,7 @@ class Adc2Std(object):
         # rospy.init_node('slagent', anonymous=False,log_level=rospy.DEBUG)
 
         # Define Subscriber
-        self.adcSub = rospy.Subscriber('/adc', Floats, self.AdcSubCB)
+        self.adcSub = rospy.Subscriber('/adc', Adc, self.AdcSubCB)
 
         # Define Publisher /mavros/rc/override (mavros/OverrideRCIn)
         self.pubShortHeight = rospy.Publisher("/arm/height", Int32, queue_size=10)
