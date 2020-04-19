@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(joy2rc)
+project(slrctools)
 find_package(catkin REQUIRED roscpp std_msgs sensor_msgs joy message_generation)
 
 add_message_files(

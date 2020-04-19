@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>joy2rc</name>
+  <name>slrctools</name>
   <version>0.0.1</version>
   <description>The software package that implements the agent of SmartLoader</description>
 
