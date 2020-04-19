@@ -32,7 +32,12 @@ class Adc2Std(object):
         self.pubLongHeight.publish(self.msgHeightLong)
 
         rollPitchYaw = Vector3(msg.adc2, msg.adc3, msg.adc4)
-        self.bladeImuMsg.orientation = toRW.euler_to_quaternion(msg.adc2, msg.adc3, msg.adc4)
+        quat = toRW.euler_to_quaternion(msg.adc2, msg.adc3, msg.adc4)
+        self.bladeImuMsg.orientation.x = quat[0]
+        self.bladeImuMsg.orientation.y = quat[1]
+        self.bladeImuMsg.orientation.z = quat[2]
+        self.bladeImuMsg.orientation.w = quat[3]
+
         self.pubBladeImu.publish(self.bladeImuMsg)
 
 
