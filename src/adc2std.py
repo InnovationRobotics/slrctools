@@ -25,14 +25,14 @@ class Adc2Std(object):
 #    thismsg = IntAdc()
 
     def AdcSubCB(self, msg):
-        rospy.logdebug("Got message:"+msg)
-        self.msgHeightShort = msg.adc0
+        rospy.logdebug("Got message:"+str(msg))
+        self.msgHeightShort = msg.adc1
         self.pubShortHeight.publish(self.msgHeightShort)
-        self.msgHeightLong = msg.adc1
+        self.msgHeightLong = msg.adc0
         self.pubLongHeight.publish(self.msgHeightLong)
 
         rollPitchYaw = Vector3(msg.adc2, msg.adc3, msg.adc4)
-        self.bladeImuMsg.orientation = toRW.rotationROS2RW(rollPitchYaw)
+        self.bladeImuMsg.orientation = toRW.euler_to_quaternion(msg.adc2, msg.adc3, msg.adc4)
         self.pubBladeImu.publish(self.bladeImuMsg)
 
 
@@ -44,8 +44,8 @@ class Adc2Std(object):
         self.adcSub = rospy.Subscriber('/adc', Adc, self.AdcSubCB)
 
         # Define Publisher /mavros/rc/override (mavros/OverrideRCIn)
-        self.pubShortHeight = rospy.Publisher("/arm/height", Int32, queue_size=10)
-        self.pubLongHeight = rospy.Publisher("/arm/longHeight", Int32, queue_size=10)
+        self.pubLongHeight = rospy.Publisher("/arm/height", Int32, queue_size=10)
+        self.pubShortHeight = rospy.Publisher("/arm/shortHeight", Int32, queue_size=10)
         self.pubBladeImu = rospy.Publisher("/arm/blade/Imu", Imu, queue_size=10)
 
         # Init sequence:
