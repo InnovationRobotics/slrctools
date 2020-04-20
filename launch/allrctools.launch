@@ -1,5 +1,6 @@
 <launch>
-<node name="joy_node" type="joy_node" pkg="joy"  output="screen" respawn="true" />
-<node name="joy2rc" type="joy2rc.py" pkg="slrctools"  output="screen" respawn="true" />
-<node name="adc2std" type="adc2std.py" pkg="slrctools"  output="screen" respawn="true" />
+<arg name="dl" default="2" />
+<node name="joy_node" type="joy_node" pkg="joy" args="$(arg dl)" output="screen" respawn="true" />
+<node name="joy2rc" type="joy2rc.py" pkg="slrctools" args="$(arg dl)" output="screen" respawn="true" />
+<node name="adc2std" type="adc2std.py" pkg="slrctools"  args="$(arg dl)" output="screen" respawn="true" />
 </launch>

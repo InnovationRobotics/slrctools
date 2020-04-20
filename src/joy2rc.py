@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-
+import sys
 import rospy
 from std_msgs.msg import Header
 from std_msgs.msg import Int32, Bool
@@ -89,9 +89,15 @@ class Joy2RC(object):
         self.pubRC.publish(self.rcmsg)
 
 
-    def __init__(self):
-        rospy.init_node('joy2rc', anonymous=False, log_level=rospy.DEBUG)
-        # rospy.init_node('slagent', anonymous=False,log_level=rospy.DEBUG)
+    def __init__(self, deblevel = rospy.INFO):
+
+        if (len(sys.argv)>1):
+            deblevel = int(sys.argv[1])
+        print("ZZZZZZZZZ "+deblevel.__str__())
+        print("xxxxxxxxxxxx"+ sys.argv.__str__())
+        rospy.init_node('joy2rc', anonymous=False, log_level=deblevel)
+        rospy.loginfo("joy2rc initialized with Log Level:"+deblevel.__str__())
+        # rospy.init_node('joy2rc', anonymous=False,log_level=rospy.DEBUG)
 
         # Define Subscriber
         self.joyActionSub = rospy.Subscriber('/joy', Joy, self.JoyActionSubCB)
@@ -117,9 +123,12 @@ class Joy2RC(object):
         self.rcmsg.channels[4] = 2000
         self.pubRC.publish(self.rcmsg)
 
-        print("Init sequence complete...")
+        rospy.loginfo("Init sequence complete...")
 
         rospy.spin()
 
 if __name__ == '__main__':
     node = Joy2RC()
+ #   node = Joy2RC(int("1"))
+ #   node = Joy2RC(rospy.INFO)
+

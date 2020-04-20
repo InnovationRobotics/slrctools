@@ -30,9 +30,12 @@ class Adc2Std(object):
         self.pubShortHeight.publish(self.msgHeightShort)
         self.msgHeightLong = msg.adc0
         self.pubLongHeight.publish(self.msgHeightLong)
-
-        rollPitchYaw = Vector3(msg.adc2, msg.adc3, msg.adc4)
-        quat = toRW.euler_to_quaternion(msg.adc2, msg.adc3, msg.adc4)
+        # 1 degree = 0.0174532925 radian
+        # We are getting adc2, adc3, adc4 in 0.01 degree
+        rollRad = 1.74532925*msg.adc2
+        pitchRad = 1.74532925*msg.adc3
+        yawRad = 1.74532925*msg.adc4
+        quat = toRW.euler_to_quaternion(rollRad, pitchRad, yawRad)
         self.bladeImuMsg.orientation.x = quat[0]
         self.bladeImuMsg.orientation.y = quat[1]
         self.bladeImuMsg.orientation.z = quat[2]
@@ -41,9 +44,16 @@ class Adc2Std(object):
         self.pubBladeImu.publish(self.bladeImuMsg)
 
 
-    def __init__(self):
-        rospy.init_node('adc2std', anonymous=False, log_level=rospy.DEBUG)
-        # rospy.init_node('slagent', anonymous=False,log_level=rospy.DEBUG)
+    def __init__(self, deblevel=rospy.INFO):
+
+        if (len(sys.argv)>1):
+            deblevel = int(sys.argv[1])
+        print("ZZZZZZZZZ "+deblevel.__str__())
+        print("xxxxxxxxxxxx"+ sys.argv.__str__())
+        rospy.init_node('adc2std', anonymous=False,log_level=deblevel)
+        # rospy.init_node('adc2std', anonymous=False,log_level=rospy.DEBUG)
+        rospy.loginfo(rospy.get_name() + " initialized with Log Level:"+deblevel.__str__())
+        rospy.get_name()
 
         # Define Subscriber
         self.adcSub = rospy.Subscriber('/adc', Adc, self.AdcSubCB)
