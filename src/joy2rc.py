@@ -34,14 +34,17 @@ class Joy2RC(object):
         #   button 2: 1=1500 -1=1100
         #print("%.2f" % joydata[5])
         x = round(joydata[5],2)
-        val = int(1700 - 200*x)
-        if val == 1500:
-            #print("forget val="+val.__str__())
-            y = round(joydata[2], 2)
-            other_val = int(1300 + y * 200)
-            self.rcmsg.channels[0] = other_val
+        if x == 0:
+            self.rcmsg.channels[0] = 1500
         else:
-            self.rcmsg.channels[0] = val
+            val = int(1700 - 200*x)
+            if val == 1500:
+                #print("forget val="+val.__str__())
+                y = round(joydata[2], 2)
+                other_val = int(1300 + y * 200)
+                self.rcmsg.channels[0] = other_val
+            else:
+                self.rcmsg.channels[0] = val
 
         #print(other_val.__str__()+"|"+val.__str__()+"|"+((other_val+val)/2).__str__())
 
@@ -114,7 +117,7 @@ class Joy2RC(object):
         self.rcmsg.channels[7] = 1500  # NA
 
         # Define Publisher /mavros/rc/override (mavros/OverrideRCIn)
-        self.pubRC = rospy.Publisher("/mavros/rc/override", msg.OverrideRCIn, queue_size=10)
+        self.pubRC = rospy.Publisher("mavros/rc/override", msg.OverrideRCIn, queue_size=10)
         # Init sequence:
         # publish pump om 1000 then on 2000
         self.pubRC.publish(self.rcmsg)
