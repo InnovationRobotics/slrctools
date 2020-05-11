@@ -1,0 +1,6 @@
+<launch>
+<arg name="dl" default="2" />
+<node name="joy_node" type="joy_node" pkg="joy" args="$(arg dl)" output="screen" respawn="true" />
+<node name="ltech2rc" type="ltech2rc.py" pkg="slrctools" args="$(arg dl)" output="screen" respawn="true" />
+<!-- node name="adc2std" type="adc2std.py" pkg="slrctools"  args="$(arg dl)" output="screen" respawn="true" /-->
+</launch>

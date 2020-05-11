@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 
+#
+#   Correct for Logitech RumblePad
+#
+#   Mapping:
+#      Truck navigation fw/bw steering left/right with the left mushroom
+#      Blade Up/Down, Loader Oper/Close    with the right mushroom
+#      Pump Off - Button 9
+#      Pump On  - Button 10
+#      The range of the axes is [-32767, 32767]
+#
+
+
+
 
 import sys
 import rospy
@@ -14,7 +27,7 @@ from datetime import datetime
 from time import sleep
 
 
-class Joy2RC(object):
+class Ltech22RC(object):
     rcmsg = msg.OverrideRCIn()
 
 
@@ -22,71 +35,81 @@ class Joy2RC(object):
         joydata = data.axes
         buchna = data.buttons
 
-        if buchna[6]==1:
+        if buchna[8]==1:
             self.rcmsg.channels[4]=1000
-        if buchna[7]==1:
+        if buchna[9]==1:
             self.rcmsg.channels[4]=2000
         # print("joydata" + joydata.__str__())
         #
         rospy.logdebug("actions" + joydata.__str__())
 
         #compute throttle:
-        #   button 5: 1=1500 -1=1900
-        #   button 2: 1=1500 -1=1100
+        #   axe 5: <0 1=1500 -1=1900
+        #   axe 5: >0 1=1500 -1=1100
         #print("%.2f" % joydata[5])
-        x = round(joydata[5],2)
+        #x = round(joydata[5],2)
+        x=joydata[1]
         if x == 0:
             self.rcmsg.channels[0] = 1500
         else:
-            val = int(1700 - 200*x)
-            if val == 1500:
-                #print("forget val="+val.__str__())
-                y = round(joydata[2], 2)
-                other_val = int(1300 + y * 200)
-                self.rcmsg.channels[0] = other_val
-            else:
-                self.rcmsg.channels[0] = val
+            temp_val = 400 * x / 1
+            rounded_temp_val = round(temp_val, 0)
+            val = int(1500 + rounded_temp_val)
+            self.rcmsg.channels[0] = val
 
         #print(other_val.__str__()+"|"+val.__str__()+"|"+((other_val+val)/2).__str__())
 
         #compute steering:
-        # button 0: 0 = 1500
-        # [0,1] = 1800-2000
-        # [-1,0] = 1000-1200
-        x = round(joydata[0],2)
+        # axes[4] 0: 0 = 1500
+        # [0,-32767] = 1800-2000
+        # [0, 32767] = 1000-1200
+        x = joydata[0]
         if x==0:
             val = 1500
-        elif x > 0:
-            val = int(1800+x*200)
         else:
-            val = int(1200+x*200)
+            temp_val = 200 * x / 1
+            rounded_temp_val = round(temp_val, 0)
+
+            if x > 0:
+                val = int(1200-rounded_temp_val)
+            else:
+                val = int(1800-rounded_temp_val)
+
         self.rcmsg.channels[2] = val
 
         #compute arm height:
-        # button 4: 0 = 1500
-        # [0,-1] =[1900, 2100] - lower the arm
-        # [0,1] = [900, 1100] -  raise the arm
-        x = round(joydata[4],2)
+        # axes[3] : 0 = 1500
+        # [0,-32767] =[1900, 2100] - lower the arm
+        # [0,32767] = [900, 1100] -  raise the arm
+        x = joydata[3]
         if x==0:
             val = 1500
-        elif x > 0:
-            val = int(900 + x*200)
         else:
-            val = int(1900 -x*200)
+            temp_val = 200 * x / 1
+            rounded_temp_val = round(temp_val, 0)
+            if x > 0:
+                val = int(1900+rounded_temp_val)
+            else:
+                val = int(1100+rounded_temp_val)
+
         self.rcmsg.channels[1] = val
 
         #compute blade angle:
-        # button 3: 0 = 1500
-        # [0,1] = 1800-2000 left
-        # [-1,0] = 1000-1200 right
+        # axes[2]: 0 = 1500
+        # [0,32767] = 1800-2000 left
+        # [0,-32767] = 1000-1200 right
         # Not sure
-        x = round(joydata[3], 2)
+        x = round(joydata[2], 2)
         if x == 0:
             val = 1500
-        elif x > 0:
-            val = int(1800 + x * 200)
         else:
-            val = int(1200 + x * 200)
+            temp_val = 200 * x / 1
+            rounded_temp_val = round(temp_val, 0)
+            if x > 0:
+                val = int(1200 - rounded_temp_val)
+            else:
+                val = int(1800 - rounded_temp_val)
+
         self.rcmsg.channels[3] = val
 
         rospy.logdebug("Publishing:"+self.rcmsg.__str__())
@@ -97,11 +120,10 @@ class Joy2RC(object):
 
         if (len(sys.argv)>1):
             deblevel = int(sys.argv[1])
-        print("ZZZZZZZZZ "+deblevel.__str__())
-        print("xxxxxxxxxxxx"+ sys.argv.__str__())
-        rospy.init_node('joy2rc', anonymous=False, log_level=deblevel)
-        rospy.loginfo("joy2rc initialized with Log Level:"+deblevel.__str__())
-        # rospy.init_node('joy2rc', anonymous=False,log_level=rospy.DEBUG)
+
+        rospy.init_node('ltech2rc', anonymous=False, log_level=deblevel)
+        rospy.loginfo("ltech2rc initialized with Log Level:"+deblevel.__str__())
+        # rospy.init_node('drag2rc', anonymous=False,log_level=rospy.DEBUG)
 
         # Define Subscriber
         self.joyActionSub = rospy.Subscriber('/joy', Joy, self.JoyActionSubCB)
@@ -143,7 +165,7 @@ class Joy2RC(object):
 
 if __name__ == '__main__':
     try:
-        node = Joy2RC()
+        node = Ltech22RC()
     except rospy.ROSInterruptException:
         print("rospy.ROSInterruptException: " + node.__module__ )
         pass
