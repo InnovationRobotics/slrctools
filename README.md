@@ -1,5 +1,5 @@
 # slrctools
- The goal of this software package is to stupidely convert /joy topic to /mavros/rc/override topic.
+The goal of this software package is to stupidely convert /joy topic to /mavros/rc/override topic.
 
 The file joy2rc.py is the implementation of the ROS node called /joy2rc that corresponds to microsoft mouse.
 The file ltech2rc.py is the implementation of the ROS node called /ltech2rc that corresponds to logitech mouse.
@@ -11,10 +11,11 @@ and output the topic that corresponds to the mavros rc topic:
 
 The file adc2std.py contains the implementation of the node adc2std that converts the arduino topic:
  * /adc
+ 
 to: 
  * /arm/height, /arm/shortHeight, /arm/blade/Imu
 
-For this last file, you need to install rosserial_arduino.
+This node is needed only for the real car. For this last file, you need to install rosserial_arduino.
 
 
 
